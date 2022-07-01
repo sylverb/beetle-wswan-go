@@ -1,7 +1,7 @@
 #ifndef __WSWAN_GFX_H
 #define __WSWAN_GFX_H
 
-#include "../state.h"
+#include "../wswan-state.h"
 #include "../video.h"
 
 #ifdef __cplusplus
@@ -19,12 +19,15 @@ extern uint8		wsTCacheUpdate2[512];	  //tiles cache flags
 extern uint8		wsTileRow[8];		  //extracted 8 pixels (tile row)
 extern int		wsVMode;			  //Video Mode	
 
+#ifndef TARGET_GNW
 void wsMakeTiles(void);
+#endif
 void wsGetTile(uint32,uint32,int,int,int);
 void wsSetVideo(int, bool);
 void WSWan_TCacheInvalidByAddr(uint32);
 
 bool wsExecuteLine(MDFN_Surface *surface, bool skip);
+bool wsExecuteLineRotate(MDFN_Surface *surface, bool skip, bool rotate);
 
 void WSwan_SetMonoPalette(int depth, uint32 mono_start, uint32 mono_end);
 
@@ -39,6 +42,7 @@ uint8 WSwan_GfxRead(uint32 A);
 int WSwan_GfxStateAction(StateMem *sm, int load, int data_only);
 
 void wsScanline(uint16 *target, int depth);
+void wsScanlineRotate(uint16 *target, int depth, bool rotate);
 
 extern uint32		dx_r,dx_g,dx_b,dx_sr,dx_sg,dx_sb;
 extern uint32		dx_bits,dx_pitch,cmov,dx_linewidth_blit,dx_buffer_line;

@@ -19,8 +19,8 @@
 #include <stdlib.h>
 
 #include "wswan.h"
-#include "sound.h"
-#include "v30mz.h"
+#include "wswan-sound.h"
+#include "wswan-v30mz.h"
 #include "wswan-memory.h"
 #include "../state_inline.h"
 
@@ -57,6 +57,9 @@ static uint8 sample_pos[4];
 static uint16 nreg;
 static uint32 last_ts;
 
+#ifdef TARGET_GNW
+static uint16 buffer_audio[1272];
+#endif
 
 #define MK_SAMPLE_CACHE	\
    {    \
@@ -337,9 +340,12 @@ int32 WSwan_SoundFlush(int16 **SoundBuf, int32 *SoundBufSize)
       /* Check if sound buffer needs to be resized */
       if (*SoundBufSize < RequiredSize)
       {
+#ifndef TARGET_GNW
          int16 *newBuf = (int16*)realloc(*SoundBuf,
                RequiredSize * sizeof(int16));
-
+#else
+         int16 *newBuf = (int16*)buffer_audio;
+#endif
          if (newBuf)
          {
             *SoundBuf     = newBuf;

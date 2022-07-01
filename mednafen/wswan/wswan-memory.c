@@ -23,21 +23,25 @@
 #include <time.h>
 
 #include "wswan.h"
-#include "gfx.h"
-#include "interrupt.h"
+#include "wswan-gfx.h"
+#include "wswan-interrupt.h"
 #include "wswan-memory.h"
-#include "sound.h"
-#include "eeprom.h"
-#include "rtc.h"
-#include "v30mz.h"
+#include "wswan-sound.h"
+#include "wswan-eeprom.h"
+#include "wswan-rtc.h"
+#include "wswan-v30mz.h"
 #include "../mempatcher.h"
-#include "../settings.h"
+#include "../wswan-settings.h"
 #include "../state_inline.h"
+#include "gw_malloc.h"
 
 static bool SkipSL; // Skip save and load
 
 uint32 wsRAMSize;
 uint8 wsRAM[65536];
+#ifdef TARGET_GNW
+static uint8 sRam[256*1024]; // SRAM
+#endif
 uint8 *wsSRAM = NULL;
 
 uint8 *wsCartROM;
@@ -323,8 +327,10 @@ void WSwan_writeport(uint32 IOPort, uint8 V)
 
 void WSwan_MemoryKill(void)
 {
+#ifndef TARGET_GNW
    if(wsSRAM)
       free(wsSRAM);
+#endif
    wsSRAM = NULL;
 }
 
@@ -347,8 +353,13 @@ void WSwan_MemoryInit(bool lang, bool IsWSC, uint32 ssize, bool SkipSaveLoad)
 
    if(sram_size)
    {
+#ifndef TARGET_GNW
       wsSRAM = (uint8*)malloc(sram_size);
       memset(wsSRAM, 0, sram_size);
+#else
+      wsSRAM = sRam;
+      memset(wsSRAM, 0, 128*1024);
+#endif
    }
 
    MDFNMP_AddRAM(wsRAMSize, 0x00000, wsRAM);

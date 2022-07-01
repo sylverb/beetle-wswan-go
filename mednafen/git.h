@@ -2,7 +2,7 @@
 #define _GIT_H
 
 #include "mednafen-types.h"
-#include "state.h"
+#include "wswan-state.h"
 #include "video.h"
 
 enum

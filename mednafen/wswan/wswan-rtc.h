@@ -2,7 +2,7 @@
 #define __WSWAN_RTC_H
 
 #include "../mednafen-types.h"
-#include "../state.h"
+#include "../wswan-state.h"
 
 #ifdef __cplusplus
 extern "C" {

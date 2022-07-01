@@ -1,7 +1,7 @@
 #include "wswan.h"
-#include "interrupt.h"
-#include "v30mz.h"
-#include "../state.h"
+#include "wswan-interrupt.h"
+#include "wswan-v30mz.h"
+#include "../wswan-state.h"
 
 static uint8 IStatus;
 static uint8 IEnable;

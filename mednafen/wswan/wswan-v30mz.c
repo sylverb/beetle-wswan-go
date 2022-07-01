@@ -29,11 +29,11 @@
 
 #include <string.h>
 
-#include "interrupt.h"
+#include "wswan-interrupt.h"
 #include "wswan.h"
 #include "wswan-memory.h"
 
-#include "v30mz.h"
+#include "wswan-v30mz.h"
 #include "v30mz-private.h"
 
 #include "../state_inline.h"

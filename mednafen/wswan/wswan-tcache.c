@@ -23,7 +23,12 @@
 #include "../mednafen-types.h"
 #include "wswan-memory.h"
 
+// On the Game & Watch we can't afford to use 1MB of RAM for titles
+// So we compute tiles values when needed. Performance impacts are low
+// because this titles table is not used very often actually
+#ifndef TARGET_GNW
 uint8	tiles[256][256][2][8];
+#endif
 uint8	wsTCache[512*64];			
 uint8	wsTCache2[512*64];			
 uint8	wsTCacheFlipped[512*64];
@@ -68,6 +73,7 @@ void wsSetVideo(int number,bool force)
    }
 }
 
+#ifndef TARGET_GNW
 void wsMakeTiles(void)
 {
    int	x,y,b0,b1,b2,b3,b4,b5,b6,b7;
@@ -94,6 +100,7 @@ void wsMakeTiles(void)
          tiles[x][y][1][7]=b0;
       }
 }
+#endif
 
 void wsGetTile(uint32 number,uint32 line,int flipv,int fliph,int bank)
 {
@@ -168,12 +175,36 @@ void wsGetTile(uint32 number,uint32 line,int flipv,int fliph,int bank)
                break;
 
             default:
+            {
+#ifdef TARGET_GNW
+               int b0,b1,b2,b3,b4,b5,b6,b7;
+#endif
                t_adr=0x2000+(number<<4);
                t_index=number<<6;
                for(i=0;i<8;i++)
                {
                   byte0=wsRAM[t_adr++];
                   byte1=wsRAM[t_adr++];
+#ifdef TARGET_GNW
+                  b0=(byte0&128)>>7;b1=(byte0&64)>>6;b2=(byte0&32)>>5;b3=(byte0&16)>>4;b4=(byte0&8)>>3;b5=(byte0&4)>>2;b6=(byte0&2)>>1;b7=(byte0&1);
+                  b0|=(byte1&128)>>6;b1|=(byte1&64)>>5;b2|=(byte1&32)>>4;b3|=(byte1&16)>>3;b4|=(byte1&8)>>2;b5|=(byte1&4)>>1;b6|=(byte1&2);b7|=(byte1&1)<<1;
+                  wsTCache[t_index]=b0;
+                  wsTCacheFlipped[t_index++]=b7;
+                  wsTCache[t_index]=b1;
+                  wsTCacheFlipped[t_index++]=b6;
+                  wsTCache[t_index]=b2;
+                  wsTCacheFlipped[t_index++]=b5;
+                  wsTCache[t_index]=b3;
+                  wsTCacheFlipped[t_index++]=b4;
+                  wsTCache[t_index]=b4;
+                  wsTCacheFlipped[t_index++]=b3;
+                  wsTCache[t_index]=b5;
+                  wsTCacheFlipped[t_index++]=b2;
+                  wsTCache[t_index]=b6;
+                  wsTCacheFlipped[t_index++]=b1;
+                  wsTCache[t_index]=b7;
+                  wsTCacheFlipped[t_index++]=b0;
+#else
                   wsTCache[t_index]=tiles[byte0][byte1][0][0];
                   wsTCacheFlipped[t_index++]=tiles[byte0][byte1][1][0];
                   wsTCache[t_index]=tiles[byte0][byte1][0][1];
@@ -190,7 +221,9 @@ void wsGetTile(uint32 number,uint32 line,int flipv,int fliph,int bank)
                   wsTCacheFlipped[t_index++]=tiles[byte0][byte1][1][6];
                   wsTCache[t_index]=tiles[byte0][byte1][0][7];
                   wsTCacheFlipped[t_index++]=tiles[byte0][byte1][1][7];
+#endif
                }
+            }
          }
       }
       if(flipv)
@@ -267,12 +300,36 @@ void wsGetTile(uint32 number,uint32 line,int flipv,int fliph,int bank)
                }
                break;
             default:
+            {
+#ifdef TARGET_GNW
+               int b0,b1,b2,b3,b4,b5,b6,b7;
+#endif
                t_adr=0x4000+(number<<4);
                t_index=number<<6;
                for(i=0;i<8;i++)
                {
                   byte0=wsRAM[t_adr++];
                   byte1=wsRAM[t_adr++];
+#ifdef TARGET_GNW
+                  b0=(byte0&128)>>7;b1=(byte0&64)>>6;b2=(byte0&32)>>5;b3=(byte0&16)>>4;b4=(byte0&8)>>3;b5=(byte0&4)>>2;b6=(byte0&2)>>1;b7=(byte0&1);
+                  b0|=(byte1&128)>>6;b1|=(byte1&64)>>5;b2|=(byte1&32)>>4;b3|=(byte1&16)>>3;b4|=(byte1&8)>>2;b5|=(byte1&4)>>1;b6|=(byte1&2);b7|=(byte1&1)<<1;
+                  wsTCache2[t_index]=b0;
+                  wsTCacheFlipped2[t_index++]=b7;
+                  wsTCache2[t_index]=b1;
+                  wsTCacheFlipped2[t_index++]=b6;
+                  wsTCache2[t_index]=b2;
+                  wsTCacheFlipped2[t_index++]=b5;
+                  wsTCache2[t_index]=b3;
+                  wsTCacheFlipped2[t_index++]=b4;
+                  wsTCache2[t_index]=b4;
+                  wsTCacheFlipped2[t_index++]=b3;
+                  wsTCache2[t_index]=b5;
+                  wsTCacheFlipped2[t_index++]=b2;
+                  wsTCache2[t_index]=b6;
+                  wsTCacheFlipped2[t_index++]=b1;
+                  wsTCache2[t_index]=b7;
+                  wsTCacheFlipped2[t_index++]=b0;
+#else
                   wsTCache2[t_index]=tiles[byte0][byte1][0][0];
                   wsTCacheFlipped2[t_index++]=tiles[byte0][byte1][1][0];
                   wsTCache2[t_index]=tiles[byte0][byte1][0][1];
@@ -289,7 +346,9 @@ void wsGetTile(uint32 number,uint32 line,int flipv,int fliph,int bank)
                   wsTCacheFlipped2[t_index++]=tiles[byte0][byte1][1][6];
                   wsTCache2[t_index]=tiles[byte0][byte1][0][7];
                   wsTCacheFlipped2[t_index++]=tiles[byte0][byte1][1][7];
+#endif
                }
+            }
          }	
       }
       if(flipv)

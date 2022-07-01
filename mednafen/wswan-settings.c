@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "settings.h"
+#include "wswan-settings.h"
 
 uint64_t MDFN_GetSettingUI(const char *name)
 {

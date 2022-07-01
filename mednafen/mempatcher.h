@@ -10,7 +10,9 @@ typedef struct __SUBCHEAT
 	int compare; // < 0 on no compare
 } SUBCHEAT;
 
+#ifndef TARGET_GNW
 extern bool SubCheatsOn;
+#endif
 
 #ifdef __cplusplus
 extern "C" {

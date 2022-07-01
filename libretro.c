@@ -5,18 +5,18 @@
 
 #include "libretro_core_options.h"
 
-#include "mednafen/settings.h"
+#include "mednafen/wswan-settings.h"
 #include "mednafen/git.h"
 #include "mednafen/wswan/wswan.h"
 #include "mednafen/mempatcher.h"
-#include "mednafen/wswan/gfx.h"
-#include "mednafen/wswan/interrupt.h"
+#include "mednafen/wswan/wswan-gfx.h"
+#include "mednafen/wswan/wswan-interrupt.h"
 #include "mednafen/wswan/wswan-memory.h"
 #include "mednafen/wswan/start.inc"
-#include "mednafen/wswan/sound.h"
-#include "mednafen/wswan/v30mz.h"
-#include "mednafen/wswan/rtc.h"
-#include "mednafen/wswan/eeprom.h"
+#include "mednafen/wswan/wswan-sound.h"
+#include "mednafen/wswan/wswan-v30mz.h"
+#include "mednafen/wswan/wswan-rtc.h"
+#include "mednafen/wswan/wswan-eeprom.h"
 
 #if defined(_3DS)
 void* linearMemAlign(size_t size, size_t alignment);
@@ -504,9 +504,9 @@ static int Load(const uint8_t *data, size_t size)
       return(0);
 
    real_rom_size = (size + 0xFFFF) & ~0xFFFF;
-   pow_size      = next_pow2(real_rom_size);
-   rom_size      = pow_size + (pow_size == 0);
-
+//   pow_size      = next_pow2(real_rom_size);
+//   rom_size      = pow_size + (pow_size == 0);
+   rom_size = size;
    wsCartROM     = (uint8 *)calloc(1, rom_size);
 
    /* This real_rom_size vs rom_size funny business 

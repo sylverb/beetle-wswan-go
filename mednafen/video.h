@@ -4,11 +4,13 @@
 #include <stdint.h>
 
 
+#ifndef TARGET_GNW
 #define RED_SHIFT_24 16
 #define GREEN_SHIFT_24 8
 #define BLUE_SHIFT_24 0
 #define ALPHA_SHIFT_24 24
 #define MAKECOLOR_24(r, g, b, a) ((r << RED_SHIFT_24) | (g << GREEN_SHIFT_24) | (b << BLUE_SHIFT_24) | (a << ALPHA_SHIFT_24))
+#endif
 
 /* 16bit color - RGB565 */
 #define RED_EXPAND_16 3
@@ -19,6 +21,7 @@
 #define BLUE_SHIFT_16 0
 #define MAKECOLOR_16(r, g, b, a) (((r >> RED_EXPAND_16) << RED_SHIFT_16) | ((g >> GREEN_EXPAND_16) << GREEN_SHIFT_16) | ((b >> BLUE_EXPAND_16) << BLUE_SHIFT_16))
 
+#ifndef TARGET_GNW
 /* 16bit color - RGB555 */
 #define RED_EXPAND_15 3
 #define GREEN_EXPAND_15 3
@@ -36,6 +39,7 @@
 #define GREEN_SHIFT_15_1 5
 #define RED_SHIFT_15_1 0
 #define MAKECOLOR_15_1(r, g, b, a) (((r >> RED_EXPAND_15_1) << RED_SHIFT_15_1) | ((g >> GREEN_EXPAND_15_1) << GREEN_SHIFT_15_1) | ((b >> BLUE_EXPAND_15_1) << BLUE_SHIFT_15_1))
+#endif
 
 #ifdef __cplusplus
 extern "C" {

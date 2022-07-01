@@ -11,6 +11,10 @@
 #define ULLONG_MAX 18446744073709551615ULL
 #endif
 
+#ifdef TARGET_GNW
+static uint8_t local_buffer[(2928 + blip_buffer_extra_) * sizeof (blip_buf_t_)];
+#endif
+
 /* Copyright (C) 2003-2006 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
 General Public License as published by the Free Software Foundation; either
@@ -74,6 +78,7 @@ blargg_err_t Blip_Buffer_set_sample_rate(Blip_Buffer* bbuf, long new_rate, int m
 			new_size = s;
 	}
 
+#ifndef TARGET_GNW
 	if (bbuf->buffer_size != new_size)
 	{
 		void* p = realloc(bbuf->buffer, (new_size + blip_buffer_extra_) * sizeof (bbuf->buffer));
@@ -82,6 +87,9 @@ blargg_err_t Blip_Buffer_set_sample_rate(Blip_Buffer* bbuf, long new_rate, int m
 
 		bbuf->buffer = (blip_buf_t_*) p;
 	}
+#else
+	bbuf->buffer = (blip_buf_t_*)local_buffer;
+#endif
 
 	bbuf->buffer_size = new_size;
 

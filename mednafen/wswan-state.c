@@ -24,7 +24,7 @@
 #include <compat/msvc.h>
 #include <compat/strl.h>
 
-#include "state.h"
+#include "wswan-state.h"
 
 #define SSEEK_END	2
 #define SSEEK_CUR	1

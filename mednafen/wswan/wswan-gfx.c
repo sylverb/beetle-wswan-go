@@ -21,11 +21,11 @@
 #include <string.h>
 
 #include "wswan.h"
-#include "gfx.h"
-#include "interrupt.h"
+#include "wswan-gfx.h"
+#include "wswan-interrupt.h"
 #include "wswan-memory.h"
-#include "v30mz.h"
-#include "rtc.h"
+#include "wswan-v30mz.h"
+#include "wswan-rtc.h"
 #include "../video.h"
 #include "../state_inline.h"
 
@@ -176,14 +176,16 @@ uint8 WSwan_GfxRead(uint32 A)
    return 0;
 }
 
-bool wsExecuteLine(MDFN_Surface *surface, bool skip)
-{
+bool wsExecuteLineRotate(MDFN_Surface *surface, bool skip, bool rotate) {
    bool ret = false;
+   int x_offset;
+   int y_offset;
 
    if(wsLine < 144)
    {
       if(!skip)
       {
+#ifndef TARGET_GNW
          switch(surface->depth)
          {
             case 15:
@@ -195,6 +197,17 @@ bool wsExecuteLine(MDFN_Surface *surface, bool skip)
                wsScanline(surface->pixels + wsLine * surface->pitch * 2, surface->depth);
                break;
          }
+#else
+      if (rotate) {
+         x_offset = (surface->width - 144)/2;
+         y_offset = (surface->height - 224)/2;
+         wsScanlineRotate(surface->pixels + x_offset + wsLine + (y_offset * surface->pitch), surface->depth, rotate);
+      } else {
+         x_offset = (surface->width - 224)/2;
+         y_offset = (surface->height - 144)/2;
+         wsScanlineRotate(surface->pixels + (wsLine + y_offset) * surface->pitch + x_offset, surface->depth,rotate);
+      }
+#endif
       }
    }
 
@@ -262,6 +275,11 @@ bool wsExecuteLine(MDFN_Surface *surface, bool skip)
    return(ret);
 }
 
+bool wsExecuteLine(MDFN_Surface *surface, bool skip)
+{
+   return wsExecuteLineRotate(surface,skip,false);
+}
+
 void WSwan_SetLayerEnableMask(uint64 mask)
 {
    LayerEnabled = mask;
@@ -286,7 +304,7 @@ void WSwan_SetMonoPalette(int depth, uint32 mono_start, uint32 mono_end)
       uint32 neo_r = LERP_MONO_PALETTE_COLOR(r_start, r_end, i);
       uint32 neo_g = LERP_MONO_PALETTE_COLOR(g_start, g_end, i);
       uint32 neo_b = LERP_MONO_PALETTE_COLOR(b_start, b_end, i);
-
+#ifndef TARGET_GNW
       switch(depth)
       {
          case 15: ColorMapG[i] = MAKECOLOR_15(neo_r, neo_g, neo_b, 0); break;
@@ -297,6 +315,9 @@ void WSwan_SetMonoPalette(int depth, uint32 mono_start, uint32 mono_end)
 #endif
          case 24: ColorMapG[i] = MAKECOLOR_24(neo_r, neo_g, neo_b, 0); break;
       }
+#else
+      ColorMapG[i] = MAKECOLOR_16(neo_r, neo_g, neo_b, 0);
+#endif
    }
 }
 
@@ -312,7 +333,7 @@ void WSwan_SetPixelFormat(int depth, uint32 mono_start, uint32 mono_end)
             neo_r = r * 17;
             neo_g = g * 17;
             neo_b = b * 17;
-
+#ifndef TARGET_GNW
             switch(depth)
             {
                case 15: ColorMap[(r << 8) | (g << 4) | (b << 0)] = MAKECOLOR_15(neo_r, neo_g, neo_b, 0); break;
@@ -323,16 +344,20 @@ void WSwan_SetPixelFormat(int depth, uint32 mono_start, uint32 mono_end)
 #endif
                case 24: ColorMap[(r << 8) | (g << 4) | (b << 0)] = MAKECOLOR_24(neo_r, neo_g, neo_b, 0); break;
             }
+#else
+            ColorMap[(r << 8) | (g << 4) | (b << 0)] = MAKECOLOR_16(neo_r, neo_g, neo_b, 0);
+#endif
          }
 
    WSwan_SetMonoPalette(depth, mono_start, mono_end);
 }
 
-void wsScanline(uint16 *target, int depth)
+static   uint8		b_bg[256];
+static   uint8		b_bg_pal[256];
+
+void wsScanlineRotate(uint16 *target, int depth, bool rotate)
 {
    uint32		start_tile_n,map_a,startindex,adrbuf,b1,b2,j,t,l;
-   uint8		b_bg[256];
-   uint8		b_bg_pal[256];
 
    if(!wsVMode)
       memset(b_bg, wsColors[BGColor&0xF]&0xF, 256);
@@ -600,6 +625,7 @@ void wsScanline(uint16 *target, int depth)
 
    if(wsVMode)
    {
+#ifndef TARGET_GNW
       switch(depth)
       {
          case 15:
@@ -613,9 +639,19 @@ void wsScanline(uint16 *target, int depth)
                ((uint32_t*)target)[l] = ColorMap[wsCols[b_bg_pal[l+7]][b_bg[(l+7)]&0xf]];
          } break;
       }
+#else
+      if (rotate) {
+         for(l=0;l<224;l++)
+            target[320*(223-l)] = ColorMap[wsCols[b_bg_pal[l+7]][b_bg[(l+7)]&0xf]];
+      } else {
+         for(l=0;l<224;l++)
+            target[l] = ColorMap[wsCols[b_bg_pal[l+7]][b_bg[(l+7)]&0xf]];
+      }
+#endif
    }
    else
    {
+#ifndef TARGET_GNW
       switch(depth)
       {
          case 15:
@@ -629,9 +665,22 @@ void wsScanline(uint16 *target, int depth)
                ((uint32_t*)target)[l] = ColorMapG[(b_bg[l+7])&15];
          } break;
       }
+#else
+      if (rotate) {
+         for(l=0;l<224;l++)
+            target[320*(223-l)] = ColorMapG[(b_bg[l+7])&15];
+      } else {
+         for(l=0;l<224;l++)
+            target[l] = ColorMapG[(b_bg[l+7])&15];
+      }
+#endif
    }
 }
 
+void wsScanline(uint16 *target, int depth)
+{
+   wsScanlineRotate(target, depth, false);
+}
 
 void WSwan_GfxReset(void)
 {

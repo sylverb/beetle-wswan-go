@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "wswan.h"
-#include "eeprom.h"
+#include "wswan-eeprom.h"
 #include "wswan-memory.h"
 #include "../state_inline.h"
 

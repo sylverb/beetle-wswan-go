@@ -22,7 +22,11 @@
 
 #include "wswan.h"
 
-#include "../state.h"
+#include "../wswan-state.h"
+
+#ifdef TARGET_GNW
+extern time_t GW_GetUnixTime(void);
+#endif
 
 static uint64 CurrentTime;
 static uint32 ClockCycleCounter;
@@ -57,7 +61,11 @@ uint8 WSwan_RTCRead(uint32 A)
          if(Command != 0x15)
             return Data | 0x80;
 
+#ifndef TARGET_GNW
          long_time = CurrentTime;
+#else
+         long_time = GW_GetUnixTime();
+#endif
          newtime = gmtime( &long_time );
 
          switch(wsCA15)

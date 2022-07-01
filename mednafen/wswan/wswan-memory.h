@@ -1,7 +1,7 @@
 #ifndef __WSWAN_MEMORY_H
 #define __WSWAN_MEMORY_H
 
-#include "../state.h"
+#include "../wswan-state.h"
 
 enum
 {
